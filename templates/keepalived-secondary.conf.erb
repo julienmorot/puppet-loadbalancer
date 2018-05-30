@@ -1,0 +1,27 @@
+vrrp_script reload_haproxy {
+        script "killall -0 haproxy"
+        interval 2
+        weight 2
+}
+
+vrrp_instance VI_2 {
+        interface ens160
+        state BACKUP
+        virtual_router_id 52
+        priority 201
+        unicast_src_ip <%= @lb2_ip %>
+        unicast_peer {
+               <%= @lb1_ip %>
+        }
+        nopreempt
+        authentication {
+                auth_type PASS
+                auth_pass <%= @authkey %>
+        }
+        virtual_ipaddress {
+            <%= @lbvip %>
+        }
+        track_script {
+            reload_haproxy
+        }
+}

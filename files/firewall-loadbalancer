@@ -1,0 +1,39 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        firewall-loadbalancer
+# Required-Start:  $network $remote_fs $syslog
+# Required-Stop:   $network $remote_fs $syslog
+# Default-Start:   2 3 4 5
+# Default-Stop:    1
+# Short-Description: Start firewall loadbalancer
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+. /lib/lsb/init-functions
+
+case $1 in
+        start)
+                log_daemon_msg "Starting firewall-loadbalancer"
+                echo "1" > /proc/sys/net/ipv4/ip_forward
+                /sbin/modprobe xt_TPROXY
+                /sbin/iptables -t mangle -N DIVERT
+                /sbin/iptables -t mangle -A PREROUTING -p tcp -m socket -j DIVERT
+                /sbin/iptables -t mangle -A DIVERT -j MARK --set-mark 1
+                /sbin/iptables -t mangle -A DIVERT -j ACCEPT
+                /sbin/ip rule add fwmark 1 lookup 100
+                /sbin/ip route add local 0.0.0.0/0 dev lo table 100
+                ;;
+        stop)
+                log_daemon_msg "Stopping firewall-loadbalancer"
+                /sbin/iptables -F
+                /sbin/iptables -X
+                /sbin/iptables -F -t mangle
+                ;;
+        *)
+                echo "Usage: $0 {start|stop}"
+                exit 2
+                ;;
+esac
+
