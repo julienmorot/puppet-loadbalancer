@@ -15,6 +15,7 @@ class loadbalancer::haproxy {
 
     sysctl { 'net.ipv4.ip_forward': value => '1' }
     sysctl { 'net.ipv4.ip_nonlocal_bind': value => '1' }
+	sysctl { 'net.ipv4.tcp_tw_recycle': value => '0' }
     sysctl { 'fs.file-max': value => '10000000' }
     sysctl { 'net.ipv4.tcp_mem': value => '786432 1697152 1945728' }
     sysctl { 'net.ipv4.tcp_rmem': value => '4096 4096 16777216' }
